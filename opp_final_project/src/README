@@ -1,0 +1,60 @@
+galros66
+chucklind
+
+
+Differences between plan and implementation:
+Originally we thought we would have a class that created leaves, like Tree and Terrain, not an object
+inheriting GameObject. Eventually we realized that in order to properly handle collisions with the ground,
+we would need to inherit and override onCollisionEnter. It also simply made sense from a comprehensibility
+standpoint.
+In addition, the smooth noise function was originally a private method in Terrain. We decided to make it
+its own class in the util package, since it's potentially useful for other things in a simulated world.
+The EnergyCounter was originally handled in a private method in Avatar, and we realized that since
+it's a separate renderable and everything it deserves its own small object.
+Finally, we added the MockAvatar (sidekick) to the game.
+
+
+Infinite World
+At initialization, the world is created in a 5000 pixel radius of the avatar. The update function ensures that
+whenever the avatar reaches within one screen-width of the end of the world, more world is created in the
+direction of the imminent apocalypse and a chunk of the world in the opposite direction is discarded to avoid
+unnecessary calculations slowing down the game.
+We cleverly manipulated the seed of the Random object, using the x-coordinate of the creation as an argument,
+to make sure that the world, if destroyed and recreated, was created in a reasonably consistent fashion, for
+the gods of PEPSE, if nothing else, are rigorously consistent.
+
+
+Trees
+The package trees handles the building of Tree and Leaf objects. We ended up creating a separate class
+inheriting GameObject to represent the leaves, since it is a highly specialized object with complex collision
+protocols. Not so for the trees, so they were simply classic GameObjects.
+To avoid interdependence between Terrain and Tree, the PepseGameManager passes Terrain's groundHeightAt
+function as a callback to Tree.
+Leaf collisions - it was not simple to make the leaves collide properly with the ground without seriously
+slowing down the program. The way we handled it in the end was by putting the surface level terrain blocks in
+a separate layer so that there weren't background calculations of all of the terrain blocks with all of the
+leaves. On collision, the leaves stop moving vertically and mostly stop moving horizontally - some of the
+horizontal movement continues, which we think is consistent with how leaves move on the ground in the real
+world.
+
+
+Dilemmas and decisions
+We ran into a brick wall when it came to a smooth noise function. One of us tried and failed for hours to
+figure out how to use Perlin. Eventually the other combed the interwebs and found a trigonometric function
+that uses pi and e to create an unpredictable but smooth function, and we went with that. Only toward the
+end did we get around to putting it in its own class.
+The infinite world created some runtime problems - but cleverly playing with the radius that the game
+manager holds around the avatar yielded reasonable results.
+We also tried to avoid passing the Leaf objects the gameObjectCollection, since normally objects are not
+responsible for adding themselves. But we found that it would be easiest if the leaves controlled their own
+life-cycles, so they needed to be able to add and remove leaves themselves.
+
+
+Bonuses
+Spongebob is our favorite TA, so we made the avatar look like him.
+At the last second, we decided to add an option for a "mock avatar" - like in some video games, where the
+main avatar has a sidekick that follows them around. The mock avatar is added at the press of the 'p' key,
+since (naturally) the mock avatar is in the likeness of our other favorite TA, Patrick. It is deleted at
+the press of the 'd' key.
+Note that we made sure that Patrick can't decide to walk too far away from Spongebob. However, Spongebob
+can get too far away from Patrick, in which case Patrick is automatically removed from the game.
